@@ -106,6 +106,9 @@ message DNSConfig {
 
   // If set, this error indicates why DNS is not working.
   string error = 7;
+
+  // The time to live for an entry in the local DNS cache.
+  google.protobuf.Duration cache_ttl = 10;
 }
 
 message SubnetViaWorkload {

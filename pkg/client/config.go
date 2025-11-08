@@ -1089,6 +1089,7 @@ func (d *DNS) Equal(o *DNS) bool {
 		o.VIFAddress == d.VIFAddress &&
 		o.LookupTimeout == d.LookupTimeout &&
 		o.RecursionCheck == d.RecursionCheck &&
+		o.CacheTTL == d.CacheTTL &&
 		slices.Equal(o.IncludeSuffixes, d.IncludeSuffixes) &&
 		slices.Equal(o.ExcludeSuffixes, d.ExcludeSuffixes) &&
 		slices.Equal(o.Excludes, d.Excludes) &&
@@ -1105,6 +1106,7 @@ var DefaultExcludeSuffixes = []string{ //nolint:gochecknoglobals // constant
 
 var defaultDNS = DNS{ //nolint:gochecknoglobals // constant
 	ExcludeSuffixes: DefaultExcludeSuffixes,
+	CacheTTL:        60 * time.Second,
 }
 
 func (d *DNS) defaults() DefaultsAware {
@@ -1302,6 +1304,7 @@ type DNS struct {
 	LookupTimeout    time.Duration    `json:"lookupTimeout,format:units"`
 	RecursionCheck   bool             `json:"recursionCheck"`
 	UseComplexLookup bool             `json:"useComplexLookup"`
+	CacheTTL         time.Duration    `json:"cacheTTL,format:units"`
 }
 
 // DNSSnake is the same as DNS but with snake_case json/yaml names.
@@ -1316,6 +1319,7 @@ type DNSSnake struct {
 	LookupTimeout    time.Duration    `json:"lookup_timeout,format:units"`
 	RecursionCheck   bool             `json:"recursion_check"`
 	UseComplexLookup bool             `json:"use_complex_lookup"`
+	CacheTTL         time.Duration    `json:"cache_ttl,format:units"`
 }
 
 func (d *DNS) ToRPC() *daemon.DNSConfig {
@@ -1326,6 +1330,7 @@ func (d *DNS) ToRPC() *daemon.DNSConfig {
 		LookupTimeout:   durationpb.New(d.LookupTimeout),
 		RecursionCheck:  d.RecursionCheck,
 		Error:           d.Error,
+		CacheTtl:        durationpb.New(d.CacheTTL),
 	}
 	for _, a := range d.LocalAddresses {
 		aBin, _ := a.MarshalBinary()
@@ -1358,6 +1363,7 @@ func (d *DNS) ToSnake() *DNSSnake {
 		RecursionCheck:   d.RecursionCheck,
 		UseComplexLookup: d.UseComplexLookup,
 		Error:            d.Error,
+		CacheTTL:         d.CacheTTL,
 	}
 }
 

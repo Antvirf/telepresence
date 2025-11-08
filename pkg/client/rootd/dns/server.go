@@ -78,6 +78,7 @@ type Server struct {
 	requestCount int64
 	cache        *xsync.Map[cacheKey, *cacheEntry]
 	recursive    int32 // one of the recursionXXX constants declared above (unique type avoided because it just gets messy with the atomic calls)
+	cacheTTL     time.Duration
 
 	// Suffixes to immediately drop from the query before processing. This list will always contain the tel2Search domain.
 	// The overriding resolver will also add the search path found in /etc/resolv.conf, because that search path is not
@@ -130,8 +131,12 @@ type cacheEntry struct {
 // cacheTTL is the time to live for an entry in the local DNS cache.
 const cacheTTL = 60 * time.Second
 
-func (dv *cacheEntry) expired() bool {
-	return time.Since(dv.created) > cacheTTL
+func (s *Server) cacheExpired(dv *cacheEntry) bool {
+	ttl := s.cacheTTL
+	if ttl == 0 {
+		ttl = cacheTTL
+	}
+	return time.Since(dv.created) > ttl
 }
 
 func (dv *cacheEntry) close() {
@@ -160,6 +165,10 @@ func NewServer(config *client.DNS, namespace string, clusterLookup Resolver) *Se
 	if config.LookupTimeout <= 0 {
 		config.LookupTimeout = 4 * time.Second
 	}
+	cacheTTL := config.CacheTTL
+	if cacheTTL == 0 {
+		cacheTTL = 60 * time.Second
+	}
 	return &Server{
 		DNS:             *config,
 		mappingsMap:     mappingsMap(config.Mappings),
@@ -173,6 +182,7 @@ func NewServer(config *client.DNS, namespace string, clusterLookup Resolver) *Se
 		namespaceDomain: namespace + ".",
 		clusterLookup:   clusterLookup,
 		ready:           make(chan struct{}),
+		cacheTTL:        cacheTTL,
 	}
 }
 
@@ -709,7 +719,7 @@ func (s *Server) resolveThruCache(q *dns.Question) (answer dnsproxy.RRs, rCode i
 	key := cacheKey{name: q.Name, qType: q.Qtype}
 	found := false
 	dv, _ := s.cache.Compute(key, func(dv *cacheEntry, loaded bool) (newValue *cacheEntry, op xsync.ComputeOp) {
-		if loaded && !dv.expired() {
+		if loaded && !s.cacheExpired(dv) {
 			found = true
 			return dv, xsync.CancelOp
 		}
