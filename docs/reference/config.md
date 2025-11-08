@@ -95,6 +95,7 @@ The fields for `client.dns` are: `localIP`, `excludeSuffixes`, `includeSuffixes`
 | `lookupTimeout`    | Maximum time to wait for a cluster side host lookup.                                                                                                                | [duration][go-duration] [string][yaml-str]  | 4 seconds                                          |
 | `recursionCheck`   | Enable DNS lookup recursion detection and avoidance.                                                                                                                | boolean                                     | false                                              |
 | `useComplexLookup` | Disable use of simplified but efficient A and AAAA lookups.                                                                                                         | [boolean][yaml-bool]                        | `false`                                            |
+| `cacheTTL`         | Time to live for an entry in the local DNS cache.                                                                                                                   | [duration][go-duration] [string][yaml-str]  | 60 seconds                                         |
 
 Here is an example values.yaml:
 ```yaml
@@ -104,6 +105,7 @@ client:
     excludeSuffixes: [.se, .com, .io, .net, .org, .ru]
     localAddress: 172.12.0.53
     lookupTimeout: 30s
+    cacheTTL: 120s
 ```
 
 #### Mappings

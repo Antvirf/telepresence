@@ -7,7 +7,6 @@ require (
 	github.com/docker/go-plugins-helpers v0.0.0-20240701071450-45e2431495c8
 	github.com/puzpuzpuz/xsync/v4 v4.2.0
 	github.com/sirupsen/logrus v1.9.3
-	github.com/telepresenceio/telepresence/rpc/v2 v2.24.1
 	google.golang.org/grpc v1.76.0
 	google.golang.org/protobuf v1.36.10
 )
@@ -16,7 +15,6 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
 	github.com/docker/go-connections v0.6.0 // indirect
-	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
