@@ -128,15 +128,8 @@ type cacheEntry struct {
 	wait    chan struct{}
 }
 
-// cacheTTL is the time to live for an entry in the local DNS cache.
-const cacheTTL = 60 * time.Second
-
 func (s *Server) cacheExpired(dv *cacheEntry) bool {
-	ttl := s.cacheTTL
-	if ttl == 0 {
-		ttl = cacheTTL
-	}
-	return time.Since(dv.created) > ttl
+	return time.Since(dv.created) > s.cacheTTL
 }
 
 func (dv *cacheEntry) close() {
@@ -165,10 +158,6 @@ func NewServer(config *client.DNS, namespace string, clusterLookup Resolver) *Se
 	if config.LookupTimeout <= 0 {
 		config.LookupTimeout = 4 * time.Second
 	}
-	cacheTTL := config.CacheTTL
-	if cacheTTL == 0 {
-		cacheTTL = 60 * time.Second
-	}
 	return &Server{
 		DNS:             *config,
 		mappingsMap:     mappingsMap(config.Mappings),
@@ -182,7 +171,7 @@ func NewServer(config *client.DNS, namespace string, clusterLookup Resolver) *Se
 		namespaceDomain: namespace + ".",
 		clusterLookup:   clusterLookup,
 		ready:           make(chan struct{}),
-		cacheTTL:        cacheTTL,
+		cacheTTL:        config.CacheTTL,
 	}
 }
 
